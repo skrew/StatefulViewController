@@ -40,29 +40,41 @@ class StatefulViewControllerTests: XCTestCase {
     }
     
     func testStateMachine() {
+        let errorTransition = expectation(description: "wait for error state transition")
         stateMachine.transitionToState(.view("error"), animated: true) {
-            XCTAssertTrue(self.errorView.superview === self.stateMachine.view, "")
-            XCTAssertNil(self.loadingView.superview, "")
-            XCTAssertNil(self.emptyView.superview, "")
+            errorTransition.fulfill()
         }
+        wait(for: [errorTransition], timeout: 0.1)
+        XCTAssertTrue(self.errorView.superview?.superview === self.stateMachine.view, "")
+        XCTAssertNil(self.loadingView.superview, "")
+        XCTAssertNil(self.emptyView.superview, "")
         
+        let loadingTransition = expectation(description: "wait for loading state transition")
         stateMachine.transitionToState(.view("loading"), animated: true) {
-            XCTAssertNil(self.errorView.superview, "")
-            XCTAssertTrue(self.loadingView.superview === self.stateMachine.view, "")
-            XCTAssertNil(self.emptyView.superview, "")
+            loadingTransition.fulfill()
         }
-        
+        wait(for: [loadingTransition], timeout: 0.1)
+        XCTAssertNil(self.errorView.superview, "")
+        XCTAssertTrue(self.loadingView.superview?.superview === self.stateMachine.view, "")
+        XCTAssertNil(self.emptyView.superview, "")
+
+        let noneTransition = expectation(description: "wait for reset (no state) transition")
         stateMachine.transitionToState(.none, animated: true) {
-            XCTAssertNil(self.errorView.superview, "")
-            XCTAssertNil(self.loadingView.superview, "")
-            XCTAssertNil(self.emptyView.superview, "")
+            noneTransition.fulfill()
         }
-        
+        wait(for: [noneTransition], timeout: 0.1)
+        XCTAssertNil(self.errorView.superview, "")
+        XCTAssertNil(self.loadingView.superview, "")
+        XCTAssertNil(self.emptyView.superview, "")
+
+        let emptyTransition = expectation(description: "wait for empty state transition")
         stateMachine.transitionToState(.view("empty"), animated: true) {
-            XCTAssertNil(self.errorView.superview, "")
-            XCTAssertNil(self.loadingView.superview, "")
-            XCTAssertFalse(self.emptyView.superview === self.stateMachine.view, "")
+            emptyTransition.fulfill()
         }
+        wait(for: [emptyTransition], timeout: 0.1)
+        XCTAssertNil(self.errorView.superview, "")
+        XCTAssertNil(self.loadingView.superview, "")
+        XCTAssertTrue(self.emptyView.superview?.superview === self.stateMachine.view, "")
     }
     
 }
