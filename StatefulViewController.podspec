@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name              = "StatefulViewController"
+  s.name              = "Seed-StatefulViewController"
   s.version           = "3.0-seed.0"
   s.summary           = "Placeholder views based on content, loading, error or empty states"
   s.description       = "A view controller subclass that presents placeholder views based on content, loading, error or empty states."
