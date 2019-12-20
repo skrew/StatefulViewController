@@ -12,4 +12,5 @@ Pod::Spec.new do |s|
   s.source            = { :git => "https://github.com/seedco/StatefulViewController.git", :tag => s.version }
   s.requires_arc      = true
   s.source_files      = 'StatefulViewController/*.swift'
+  s.swift_versions    = ['5.0']
 end
