@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
   s.social_media_url  = "http://twitter.com/schuchalexander"
   s.ios.deployment_target = "8.0"
   s.tvos.deployment_target = "9.0"
-  s.source            = { :git => "https://github.com/aschuch/StatefulViewController.git", :tag => s.version }
+  s.source            = { :git => "https://github.com/seedco/StatefulViewController.git", :tag => s.version }
   s.requires_arc      = true
   s.source_files      = 'StatefulViewController/*.swift'
 end
