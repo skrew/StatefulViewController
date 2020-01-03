@@ -1,8 +1,7 @@
 # StatefulViewController
 
 [![Build Status](https://travis-ci.org/aschuch/StatefulViewController.svg)](https://travis-ci.org/aschuch/StatefulViewController)
-![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)
-![Swift 3.0](https://img.shields.io/badge/Swift-3.0-orange.svg)
+![Swift 5.0](https://img.shields.io/badge/Swift-5.0-orange.svg)
 ![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20tvOS-lightgrey.svg)
 
 A protocol to enable `UIViewController`s or `UIView`s to present placeholder views based on content, loading, error or empty states.
@@ -13,7 +12,7 @@ A protocol to enable `UIViewController`s or `UIView`s to present placeholder vie
 
 In a networked application a view controller or custom view typically has the following states that need to be communicated to the user:
 
-* **Loading**: The content is currently loaded over the network.
+* **Loading**: The content is currently being loaded over the network.
 * **Content**: The content is available and presented to the user.
 * **Empty**: There is currently no content available to display.
 * **Error**: An error occurred whilst downloading content.
@@ -23,16 +22,6 @@ As trivial as this flow may sound, there are a lot of cases that result in a rat
 ![Decision Tree](Resources/decision_tree.png)
 
 `StatefulViewController` is a concrete implementation of this particular decision tree. (If you want to create your own modified version, you might be interested in the [state machine](#viewstatemachine) that is used to show and hide views.)
-
-## Version Compatibility
-
-Current Swift compatibility breakdown:
-
-| Swift Version | Framework Version |
-| ------------- | ----------------- |
-| 3.0           | 3.x               |
-| 2.3           | 2.x               |
-| 2.2           | 1.x               |
 
 [all releases]: https://github.com/aschuch/StatefulViewController/releases
 
@@ -77,6 +66,7 @@ After that, simply tell the view controller whenever content is loading and `Sta
 override func viewWillAppear(animated: Bool) {
     super.viewWillAppear(animated)
 
+    setupInitialViewState()
     loadDeliciousWines()
 }
 
@@ -157,25 +147,9 @@ stateMachine.transitionToState(.None, animated: true) {
 
 ## Installation
 
-#### Carthage
+#### Swift Package Manager
 
-Add the following line to your [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile).
-
-```
-github "aschuch/StatefulViewController" ~> 3.0
-```
-
-Then run `carthage update`.
-
-#### CocoaPods
-
-Add the following line to your Podfile.
-
-```
-pod "StatefulViewController", "~> 3.0"
-```
-
-Then run `pod install` with CocoaPods 0.36 or newer.
+TODO: add instructions for SPM
 
 #### Manually
 
@@ -190,27 +164,3 @@ Alternatively, all tests can be run from the terminal using [xctool](https://git
 ```bash
 xctool -scheme StatefulViewControllerTests -sdk iphonesimulator test
 ```
-
-## Todo
-
-* Default loading, error, empty views
-* Protocol on views that notifies them of removal and add
-* Views can provide delays in order to tell the state machine to show/remove them only after a specific delay (e.g. for hide and show animations)
-
-
-## Contributing
-
-* Create something awesome, make the code better, add some functionality,
-  whatever (this is the hardest part).
-* [Fork it](http://help.github.com/forking/)
-* Create new branch to make your changes
-* Commit all your changes to your branch
-* Submit a [pull request](http://help.github.com/pull-requests/)
-
-
-## Contact
-
-Feel free to get in touch.
-
-* Website: <http://schuch.me>
-* Twitter: [@schuchalexander](http://twitter.com/schuchalexander)
