@@ -9,7 +9,7 @@
 import UIKit
 import StatefulViewController
 
-class ViewController: UIViewController, StatefulViewController {
+class ViewController: UIViewController {
     fileprivate var dataArray = [String]()
     private let refreshControl = UIRefreshControl()
     @IBOutlet weak var tableView: UITableView!
@@ -52,13 +52,14 @@ class ViewController: UIViewController, StatefulViewController {
             self.endLoading(error: nil, completion: {
                 print("completion endLoading -> loadingState: \(self.currentState.rawValue)")
             })
-            print("endLoading -> loadingState: \(self.lastState.rawValue)")
             
             // Error
-            //self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
+//            self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
             
             // No Content
-            //self.endLoading(error: nil)
+//            self.endLoading(error: nil)
+
+            print("endLoading -> loadingState: \(self.lastState.rawValue)")
             
             self.refreshControl.endRefreshing()
         }
@@ -67,7 +68,7 @@ class ViewController: UIViewController, StatefulViewController {
 }
 
 
-extension ViewController {
+extension ViewController: StatefulViewController {
     
     func hasContent() -> Bool {
         return dataArray.count > 0

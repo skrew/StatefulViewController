@@ -9,7 +9,7 @@
 import Foundation
 import StatefulViewController
 
-class CollectionViewController: UICollectionViewController, StatefulViewController {
+class CollectionViewController: UICollectionViewController {
     fileprivate var dataArray = [String]()
     private let refreshControl = UIRefreshControl()
 
@@ -52,13 +52,14 @@ class CollectionViewController: UICollectionViewController, StatefulViewControll
             self.endLoading(error: nil, completion: {
                 print("completion endLoading -> loadingState: \(self.currentState.rawValue)")
             })
-            print("endLoading -> loadingState: \(self.lastState.rawValue)")
 
             // Error
-            //self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
+//            self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
 
             // No Content
-            //self.endLoading(error: nil)
+//            self.endLoading(error: nil)
+
+            print("endLoading -> loadingState: \(self.lastState.rawValue)")
 
             self.refreshControl.endRefreshing()
         }
@@ -67,7 +68,7 @@ class CollectionViewController: UICollectionViewController, StatefulViewControll
 }
 
 
-extension CollectionViewController {
+extension CollectionViewController: StatefulViewController {
 
     func hasContent() -> Bool {
         return dataArray.count > 0
