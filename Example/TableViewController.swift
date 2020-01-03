@@ -9,7 +9,7 @@
 import Foundation
 import StatefulViewController
 
-class TableViewController: UITableViewController, StatefulViewController {
+class TableViewController: UITableViewController {
     fileprivate var dataArray = [String]()
 
     override func viewDidLoad() {
@@ -38,25 +38,26 @@ class TableViewController: UITableViewController, StatefulViewController {
         if (lastState == .loading) { return }
 
         startLoading {
-            print("completaion startLoading -> loadingState: \(self.currentState.rawValue)")
+            print("completion startLoading -> loadingState: \(self.currentState.rawValue)")
         }
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
 
         // Fake network call
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(3 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(2 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Success
             self.dataArray = ["Merlot", "Sauvignon Blanc", "Blaufränkisch", "Pinot Nior"]
             self.tableView.reloadData()
             self.endLoading(error: nil, completion: {
                 print("completion endLoading -> loadingState: \(self.currentState.rawValue)")
             })
-            print("endLoading -> loadingState: \(self.lastState.rawValue)")
 
             // Error
-            //self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
+//            self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
 
             // No Content
-            //self.endLoading(error: nil)
+//            self.endLoading(error: nil)
+
+            print("endLoading -> loadingState: \(self.lastState.rawValue)")
 
             self.refreshControl?.endRefreshing()
         }
@@ -65,7 +66,7 @@ class TableViewController: UITableViewController, StatefulViewController {
 }
 
 
-extension TableViewController {
+extension TableViewController: StatefulViewController {
 
     func hasContent() -> Bool {
         return dataArray.count > 0

@@ -2,10 +2,10 @@ import UIKit
 
 /// Represents all possible states of a stateful view controller
 public enum StatefulViewControllerState: String {
-    case content = "content"
-    case loading = "loading"
-    case error = "error"
-    case empty = "empty"
+    case content
+    case loading
+    case error
+    case empty
 }
 
 /// Protocol to provide a backing view for that stateful view controller

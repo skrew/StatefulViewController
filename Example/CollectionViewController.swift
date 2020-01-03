@@ -9,7 +9,7 @@
 import Foundation
 import StatefulViewController
 
-class CollectionViewController: UICollectionViewController, StatefulViewController {
+class CollectionViewController: UICollectionViewController {
     fileprivate var dataArray = [String]()
     private let refreshControl = UIRefreshControl()
 
@@ -40,25 +40,26 @@ class CollectionViewController: UICollectionViewController, StatefulViewControll
         if (lastState == .loading) { return }
 
         startLoading {
-            print("completaion startLoading -> loadingState: \(self.currentState.rawValue)")
+            print("completion startLoading -> loadingState: \(self.currentState.rawValue)")
         }
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
 
         // Fake network call
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(3 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(2 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Success
             self.dataArray = ["Merlot", "Sauvignon Blanc", "Blaufränkisch", "Pinot Nior"]
             self.collectionView?.reloadData()
             self.endLoading(error: nil, completion: {
                 print("completion endLoading -> loadingState: \(self.currentState.rawValue)")
             })
-            print("endLoading -> loadingState: \(self.lastState.rawValue)")
 
             // Error
-            //self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
+//            self.endLoading(error: NSError(domain: "foo", code: -1, userInfo: nil))
 
             // No Content
-            //self.endLoading(error: nil)
+//            self.endLoading(error: nil)
+
+            print("endLoading -> loadingState: \(self.lastState.rawValue)")
 
             self.refreshControl.endRefreshing()
         }
@@ -67,7 +68,7 @@ class CollectionViewController: UICollectionViewController, StatefulViewControll
 }
 
 
-extension CollectionViewController {
+extension CollectionViewController: StatefulViewController {
 
     func hasContent() -> Bool {
         return dataArray.count > 0
