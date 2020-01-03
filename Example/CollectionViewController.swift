@@ -45,7 +45,7 @@ class CollectionViewController: UICollectionViewController, StatefulViewControll
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
 
         // Fake network call
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(3 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(2 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Success
             self.dataArray = ["Merlot", "Sauvignon Blanc", "Blaufränkisch", "Pinot Nior"]
             self.collectionView?.reloadData()
