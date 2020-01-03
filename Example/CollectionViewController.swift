@@ -40,7 +40,7 @@ class CollectionViewController: UICollectionViewController {
         if (lastState == .loading) { return }
 
         startLoading {
-            print("completaion startLoading -> loadingState: \(self.currentState.rawValue)")
+            print("completion startLoading -> loadingState: \(self.currentState.rawValue)")
         }
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
 

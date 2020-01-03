@@ -40,7 +40,7 @@ class ViewController: UIViewController {
         if (lastState == .loading) { return }
         
         startLoading {
-            print("completaion startLoading -> loadingState: \(self.currentState.rawValue)")
+            print("compltaion startLoading -> loadingState: \(self.currentState.rawValue)")
         }
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
         
