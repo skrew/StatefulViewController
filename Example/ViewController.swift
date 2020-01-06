@@ -40,12 +40,12 @@ class ViewController: UIViewController {
         if (lastState == .loading) { return }
         
         startLoading {
-            print("compltaion startLoading -> loadingState: \(self.currentState.rawValue)")
+            print("completion startLoading -> loadingState: \(self.currentState.rawValue)")
         }
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
         
         // Fake network call
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(2 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(4 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
             // Success
             self.dataArray = ["Merlot", "Sauvignon Blanc", "Blaufränkisch", "Pinot Nior"]
             self.tableView.reloadData()
