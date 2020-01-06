@@ -33,7 +33,7 @@ public func == (lhs: ViewStateMachineState, rhs: ViewStateMachineState) -> Bool 
 ///
 public class ViewStateMachine {
     fileprivate var viewStore: [String: UIView]
-    fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.queue", attributes: [])
+    fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.serialQueue")
 
     /// An invisible container view that gets added to the view.
     /// The placeholder views will be added to the containerView.
