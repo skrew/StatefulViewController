@@ -34,6 +34,11 @@ public func == (lhs: ViewStateMachineState, rhs: ViewStateMachineState) -> Bool 
 public class ViewStateMachine {
     fileprivate var viewStore: [String: UIView]
     fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.serialQueue")
+    private var isWaitingToShowLoadingView = false
+    private var workItem: DispatchWorkItem?
+
+    private var toLoadingTransitionDelay: Double = 1
+    private var afterLoadingTransitionDelay: Double = 1
 
     /// An invisible container view that gets added to the view.
     /// The placeholder views will be added to the containerView.
@@ -133,11 +138,11 @@ public class ViewStateMachine {
         let lastViewKey = viewKey(for: lastState)
 
         if recentlyAddedViewKey == "loading" {
-            delayTime = 2
+            delayTime = toLoadingTransitionDelay
             isWaitingToShowLoadingView = true
         } else if lastViewKey == "loading" {
             if !isWaitingToShowLoadingView {
-                delayTime = 2
+                delayTime = afterLoadingTransitionDelay
             } else {
                 // cancel current work item
                 workItem?.cancel()
