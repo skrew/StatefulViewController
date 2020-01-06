@@ -128,34 +128,27 @@ public class ViewStateMachine {
     /// - parameter campletion:	called when all animations are finished and the view has been updated
     ///
     public func transitionToState(_ state: ViewStateMachineState, animated: Bool = true, completion: (() -> ())? = nil) {
-        lastState = state
-        
-        queue.async { [weak self] in
-            guard let strongSelf = self else { return }
+        var delayTime: Double = 0
+        let recentlyAddedViewKey = viewKey(for: state)
+        let lastViewKey = viewKey(for: lastState)
 
-            if state == strongSelf.currentState {
-                return
-            }
-            
-            // Suspend the queue, it will be resumed in the completion block
-            strongSelf.queue.suspend()
-            strongSelf.currentState = state
-            
-            let c: () -> () = {
-                strongSelf.queue.resume()
-                completion?()
-            }
-            
-            // Switch state and update the view
-            DispatchQueue.main.sync {
-                switch state {
-                case .none:
-                    strongSelf.hideAllViews(animated: animated, completion: c)
-                case .view(let viewKey):
-                    strongSelf.showView(forKey: viewKey, animated: animated, completion: c)
-                }
+        if recentlyAddedViewKey == "loading" {
+            delayTime = 2
+            isWaitingToShowLoadingView = true
+        } else if lastViewKey == "loading" {
+            if !isWaitingToShowLoadingView {
+                delayTime = 2
+            } else {
+                // cancel current work item
+                workItem?.cancel()
             }
         }
+
+        lastState = state
+
+        workItem = dispatchWorkItemUpdatingView(state: state, animated: animated, completion: completion)
+
+        queue.asyncAfter(deadline: .now() + delayTime, execute: workItem!)
     }
     
     
@@ -230,6 +223,47 @@ public class ViewStateMachine {
             UIView.animate(withDuration: 0.3, animations: animations, completion: completion)
         } else {
             completion?(true)
+        }
+    }
+
+    // MARK: Helpers
+
+    private func viewKey(for state: ViewStateMachineState) -> String {
+       switch state {
+       case .none:
+           return "none"
+       case .view(let viewKey):
+           return viewKey
+       }
+    }
+
+    private func dispatchWorkItemUpdatingView(state: ViewStateMachineState, animated: Bool, completion: (() -> ())? = nil) -> DispatchWorkItem {
+        return DispatchWorkItem { [weak self] in
+            guard let strongSelf = self else { return }
+            strongSelf.isWaitingToShowLoadingView = false
+
+            if state == strongSelf.currentState {
+                return
+            }
+
+            // Suspend the queue, it will be resumed in the completion block
+            strongSelf.queue.suspend()
+            strongSelf.currentState = state
+
+            let c: () -> () = {
+                strongSelf.queue.resume()
+                completion?()
+            }
+
+            // Switch state and update the view
+            DispatchQueue.main.sync {
+                switch state {
+                case .none:
+                    strongSelf.hideAllViews(animated: animated, completion: c)
+                case .view(let viewKey):
+                    strongSelf.showView(forKey: viewKey, animated: animated, completion: c)
+                }
+            }
         }
     }
 }
