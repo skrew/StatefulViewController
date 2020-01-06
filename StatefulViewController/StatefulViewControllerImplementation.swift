@@ -107,6 +107,16 @@ extension StatefulViewController {
     public func handleErrorWhenContentAvailable(_ error: Error) {
         // Default implementation does nothing.
     }
+
+    // MARK: Set transition delays
+
+    public func setToLoadingTransitionDelay(to delay: Double) {
+        stateMachine.setToLoadingTransitionDelay(to: delay)
+    }
+
+    public func setAfterLoadingTransitionDelay(to delay: Double) {
+        stateMachine.setAfterLoadingTransitionDelay(to: delay)
+    }
     
     
     // MARK: Helper

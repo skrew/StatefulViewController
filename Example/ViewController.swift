@@ -33,6 +33,8 @@ class ViewController: UIViewController {
         super.viewWillAppear(animated)
         
         setupInitialViewState()
+        setToLoadingTransitionDelay(to: 6)
+        setAfterLoadingTransitionDelay(to: 6)
         refresh()
     }
     

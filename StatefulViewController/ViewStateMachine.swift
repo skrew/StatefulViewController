@@ -87,6 +87,14 @@ public class ViewStateMachine {
     public convenience init(view: UIView) {
         self.init(view: view, states: nil)
     }
+
+    public func setToLoadingTransitionDelay(to delay: Double) {
+        toLoadingTransitionDelay = delay
+    }
+
+    public func setAfterLoadingTransitionDelay(to delay: Double) {
+        afterLoadingTransitionDelay = delay
+    }
     
     
     // MARK: Add and remove view states
