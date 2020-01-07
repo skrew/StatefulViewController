@@ -149,18 +149,44 @@ public class ViewStateMachine {
             delayTime = toLoadingTransitionDelay
             isWaitingToShowLoadingView = true
         } else if lastViewKey == "loading" {
-            if !isWaitingToShowLoadingView {
-                delayTime = afterLoadingTransitionDelay
-            } else {
-                // cancel current work item
+            if isWaitingToShowLoadingView && recentlyAddedViewKey == "none" {
                 workItem?.cancel()
+                isWaitingToShowLoadingView = false
+            } else {
+                delayTime = afterLoadingTransitionDelay
             }
         }
 
         lastState = state
 
-        workItem = dispatchWorkItemUpdatingView(state: state, animated: animated, completion: completion)
+        let newWorkItem = DispatchWorkItem { [unowned self] in
+            self.isWaitingToShowLoadingView = false
 
+            if state == self.currentState {
+                return
+            }
+
+            // Suspend the queue, it will be resumed in the completion block
+            self.queue.suspend()
+            self.currentState = state
+
+            let c: () -> () = {
+                self.queue.resume()
+                completion?()
+            }
+
+            // Switch state and update the view
+            DispatchQueue.main.sync {
+                switch state {
+                case .none:
+                    self.hideAllViews(animated: animated, completion: c)
+                case .view(let viewKey):
+                    self.showView(forKey: viewKey, animated: animated, completion: c)
+                }
+            }
+        }
+
+        workItem = newWorkItem
         queue.asyncAfter(deadline: .now() + delayTime, execute: workItem!)
     }
     
@@ -250,35 +276,35 @@ public class ViewStateMachine {
        }
     }
 
-    private func dispatchWorkItemUpdatingView(state: ViewStateMachineState, animated: Bool, completion: (() -> ())? = nil) -> DispatchWorkItem {
-        return DispatchWorkItem { [weak self] in
-            guard let strongSelf = self else { return }
-            strongSelf.isWaitingToShowLoadingView = false
-
-            if state == strongSelf.currentState {
-                return
-            }
-
-            // Suspend the queue, it will be resumed in the completion block
-            strongSelf.queue.suspend()
-            strongSelf.currentState = state
-
-            let c: () -> () = {
-                strongSelf.queue.resume()
-                completion?()
-            }
-
-            // Switch state and update the view
-            DispatchQueue.main.sync {
-                switch state {
-                case .none:
-                    strongSelf.hideAllViews(animated: animated, completion: c)
-                case .view(let viewKey):
-                    strongSelf.showView(forKey: viewKey, animated: animated, completion: c)
-                }
-            }
-        }
-    }
+//    private func dispatchWorkItemUpdatingView(state: ViewStateMachineState, animated: Bool, completion: (() -> ())? = nil) -> DispatchWorkItem {
+//        return DispatchWorkItem { [weak self] in
+//            guard let strongSelf = self else { return }
+//            strongSelf.isWaitingToShowLoadingView = false
+//
+//            if state == strongSelf.currentState {
+//                return
+//            }
+//
+//            // Suspend the queue, it will be resumed in the completion block
+//            strongSelf.queue.suspend()
+//            strongSelf.currentState = state
+//
+//            let c: () -> () = {
+//                strongSelf.queue.resume()
+//                completion?()
+//            }
+//
+//            // Switch state and update the view
+//            DispatchQueue.main.sync {
+//                switch state {
+//                case .none:
+//                    strongSelf.hideAllViews(animated: animated, completion: c)
+//                case .view(let viewKey):
+//                    strongSelf.showView(forKey: viewKey, animated: animated, completion: c)
+//                }
+//            }
+//        }
+//    }
 }
 
 private class PassthroughView: UIView {
