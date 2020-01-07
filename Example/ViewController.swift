@@ -47,12 +47,14 @@ class ViewController: UIViewController {
         print("startLoading -> loadingState: \(self.lastState.rawValue)")
         
         // Fake network call
-        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(4 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(2 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC)) { [weak self] in
+            guard let strongSelf = self else { return }
+
             // Success
-            self.dataArray = ["Merlot", "Sauvignon Blanc", "Blaufränkisch", "Pinot Nior"]
-            self.tableView.reloadData()
-            self.endLoading(error: nil, completion: {
-                print("completion endLoading -> loadingState: \(self.currentState.rawValue)")
+            strongSelf.dataArray = ["Merlot", "Sauvignon Blanc", "Blaufränkisch", "Pinot Nior"]
+            strongSelf.tableView.reloadData()
+            strongSelf.endLoading(error: nil, completion: {
+                print("completion endLoading -> loadingState: \(strongSelf.currentState.rawValue)")
             })
             
             // Error
@@ -61,9 +63,9 @@ class ViewController: UIViewController {
             // No Content
 //            self.endLoading(error: nil)
 
-            print("endLoading -> loadingState: \(self.lastState.rawValue)")
+            print("endLoading -> loadingState: \(strongSelf.lastState.rawValue)")
             
-            self.refreshControl.endRefreshing()
+            strongSelf.refreshControl.endRefreshing()
         }
     }
     
