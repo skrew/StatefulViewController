@@ -35,7 +35,7 @@ public class ViewStateMachine {
     fileprivate var viewStore: [String: UIView]
     fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.serialQueue")
     private var isWaitingToShowLoadingView = false
-    private var workItem: DispatchWorkItem?
+    private weak var workItem: DispatchWorkItem?
 
     private var toLoadingTransitionDelay: Double = 1
     private var afterLoadingTransitionDelay: Double = 1
@@ -186,8 +186,8 @@ public class ViewStateMachine {
             }
         }
 
+        queue.asyncAfter(deadline: .now() + delayTime, execute: newWorkItem)
         workItem = newWorkItem
-        queue.asyncAfter(deadline: .now() + delayTime, execute: workItem!)
     }
     
     
