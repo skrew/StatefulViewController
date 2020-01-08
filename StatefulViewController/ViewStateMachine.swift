@@ -32,13 +32,13 @@ public func == (lhs: ViewStateMachineState, rhs: ViewStateMachineState) -> Bool 
 ///		* Hide all managed views
 ///
 public class ViewStateMachine {
-    fileprivate var viewStore: [String: UIView]
-    fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.serialQueue")
+    private var loadingWorkItem: DispatchWorkItem?
     private var isWaitingToShowLoadingView = false
-    private weak var workItem: DispatchWorkItem?
-
     private var toLoadingTransitionDelay: Double = 1
     private var afterLoadingTransitionDelay: Double = 1
+
+    fileprivate var viewStore: [String: UIView]
+    fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.serialQueue")
 
     /// An invisible container view that gets added to the view.
     /// The placeholder views will be added to the containerView.
@@ -78,11 +78,6 @@ public class ViewStateMachine {
     public init(view: UIView, states: [String: UIView]?) {
         self.view = view
         viewStore = states ?? [String: UIView]()
-        dispatchWorkItemDictionary = [String: DispatchWorkItem]()
-    }
-
-    deinit {
-        print("deinit sm")
     }
     
     /// - parameter view:		The view that should act as the superview for any added views
@@ -92,6 +87,13 @@ public class ViewStateMachine {
     public convenience init(view: UIView) {
         self.init(view: view, states: nil)
     }
+
+    deinit {
+        os_log("deinit ViewStateMachine", log: self.log, type: .debug)
+    }
+
+
+    // MARK: set loading transition delay
 
     public func setToLoadingTransitionDelay(to delay: Double) {
         toLoadingTransitionDelay = delay
@@ -135,14 +137,6 @@ public class ViewStateMachine {
         }
     }
 
-    private enum DispatchQueueWorkItemStates: String {
-        case empty
-        case loading
-        case none
-    }
-
-    private var dispatchWorkItemDictionary: [String: DispatchWorkItem]
-    
     
     // MARK: Switch view state
     
@@ -158,27 +152,24 @@ public class ViewStateMachine {
         let lastViewKey = viewKey(for: lastState)
         lastState = state
 
-        let workItem = nextWorkItem(state: state, animated: animated, completion: completion)
-        dispatchWorkItemDictionary[recentlyAddedViewKey] = workItem
-
         switch recentlyAddedViewKey {
         case "empty":
-            queue.asyncAfter(deadline: .now(), execute: dispatchWorkItemDictionary["empty"]!)
+            queue.async(execute: nextWorkItem(state: state, animated: animated, completion: completion))
         case "loading":
             isWaitingToShowLoadingView = true
-            queue.asyncAfter(deadline: .now() + toLoadingTransitionDelay, execute: dispatchWorkItemDictionary["loading"]!)
+            loadingWorkItem = nextWorkItem(state: state, animated: animated, completion: completion)
+            queue.asyncAfter(deadline: .now() + toLoadingTransitionDelay, execute: loadingWorkItem!)
         case "none":
-            var delayTime: Double = 0
-
             if lastViewKey == "loading" && isWaitingToShowLoadingView {
-                guard let loadingWorkItem = dispatchWorkItemDictionary["loading"] else { return }
-                loadingWorkItem.cancel()
+                loadingWorkItem!.cancel()
+                loadingWorkItem = nil
                 os_log("cancel work item %@", log: self.log, type: .debug, lastViewKey)
                 isWaitingToShowLoadingView = false
+
+                queue.async(execute: nextWorkItem(state: state, animated: animated, completion: completion))
             } else {
-                delayTime = afterLoadingTransitionDelay
+                queue.asyncAfter(deadline: .now() + afterLoadingTransitionDelay, execute: nextWorkItem(state: state, animated: animated, completion: completion))
             }
-            queue.asyncAfter(deadline: .now() + delayTime, execute: dispatchWorkItemDictionary["none"]!)
         default:
             return
         }
@@ -301,36 +292,6 @@ public class ViewStateMachine {
            return viewKey
        }
     }
-
-//    private func dispatchWorkItemUpdatingView(state: ViewStateMachineState, animated: Bool, completion: (() -> ())? = nil) -> DispatchWorkItem {
-//        return DispatchWorkItem { [weak self] in
-//            guard let strongSelf = self else { return }
-//            strongSelf.isWaitingToShowLoadingView = false
-//
-//            if state == strongSelf.currentState {
-//                return
-//            }
-//
-//            // Suspend the queue, it will be resumed in the completion block
-//            strongSelf.queue.suspend()
-//            strongSelf.currentState = state
-//
-//            let c: () -> () = {
-//                strongSelf.queue.resume()
-//                completion?()
-//            }
-//
-//            // Switch state and update the view
-//            DispatchQueue.main.sync {
-//                switch state {
-//                case .none:
-//                    strongSelf.hideAllViews(animated: animated, completion: c)
-//                case .view(let viewKey):
-//                    strongSelf.showView(forKey: viewKey, animated: animated, completion: c)
-//                }
-//            }
-//        }
-//    }
 }
 
 private class PassthroughView: UIView {
