@@ -39,6 +39,7 @@ public class ViewStateMachine {
 
     fileprivate var viewStore: [String: UIView]
     fileprivate let queue = DispatchQueue(label: "de.apploft.viewStateMachine.serialQueue")
+    fileprivate let log = OSLog(subsystem: "de.apploft.ViewStateMachine", category: "General")
 
     /// An invisible container view that gets added to the view.
     /// The placeholder views will be added to the containerView.
@@ -64,8 +65,7 @@ public class ViewStateMachine {
 
     /// The last state that was enqueued
     public fileprivate(set) var lastState: ViewStateMachineState = .none
-    
-    private let log = OSLog(subsystem: "de.apploft.ViewStateMachine", category: "General")
+
     // MARK: Init
     
     ///  Designated initializer.
