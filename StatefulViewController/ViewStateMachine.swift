@@ -78,6 +78,11 @@ public class ViewStateMachine {
     public init(view: UIView, states: [String: UIView]?) {
         self.view = view
         viewStore = states ?? [String: UIView]()
+        dispatchWorkItemDictionary = [String: DispatchWorkItem]()
+    }
+
+    deinit {
+        print("deinit sm")
     }
     
     /// - parameter view:		The view that should act as the superview for any added views
@@ -129,6 +134,14 @@ public class ViewStateMachine {
             }
         }
     }
+
+    private enum DispatchQueueWorkItemStates: String {
+        case empty
+        case loading
+        case none
+    }
+
+    private var dispatchWorkItemDictionary: [String: DispatchWorkItem]
     
     
     // MARK: Switch view state
@@ -141,30 +154,34 @@ public class ViewStateMachine {
     /// - parameter campletion:	called when all animations are finished and the view has been updated
     ///
     public func transitionToState(_ state: ViewStateMachineState, animated: Bool = true, completion: (() -> ())? = nil) {
-        var delayTime: Double = 0
         let recentlyAddedViewKey = viewKey(for: state)
         let lastViewKey = viewKey(for: lastState)
+        lastState = state
 
-        if recentlyAddedViewKey == "loading" {
-            delayTime = toLoadingTransitionDelay
+        let workItem = nextWorkItem(state: state, animated: animated, completion: completion)
+        dispatchWorkItemDictionary[recentlyAddedViewKey] = workItem
+
+        switch recentlyAddedViewKey {
+        case "empty":
+            queue.asyncAfter(deadline: .now(), execute: dispatchWorkItemDictionary["empty"]!)
+        case "loading":
             isWaitingToShowLoadingView = true
-        } else if lastViewKey == "loading" {
-            if isWaitingToShowLoadingView && recentlyAddedViewKey == "none" {
-                workItem?.cancel()
+            queue.asyncAfter(deadline: .now() + toLoadingTransitionDelay, execute: dispatchWorkItemDictionary["loading"]!)
+        case "none":
+            var delayTime: Double = 0
+
+            if lastViewKey == "loading" && isWaitingToShowLoadingView {
+                guard let loadingWorkItem = dispatchWorkItemDictionary["loading"] else { return }
+                loadingWorkItem.cancel()
                 os_log("cancel work item %@", log: self.log, type: .debug, lastViewKey)
                 isWaitingToShowLoadingView = false
             } else {
                 delayTime = afterLoadingTransitionDelay
             }
+            queue.asyncAfter(deadline: .now() + delayTime, execute: dispatchWorkItemDictionary["none"]!)
+        default:
+            return
         }
-
-        lastState = state
-
-        let newWorkItem = nextWorkItem(state: state, animated: animated, completion: completion)
-
-        workItem = newWorkItem
-
-        queue.asyncAfter(deadline: .now() + delayTime, execute: newWorkItem)
     }
 
     private func nextWorkItem(state: ViewStateMachineState, animated: Bool, completion: (() -> ())?) -> DispatchWorkItem {
