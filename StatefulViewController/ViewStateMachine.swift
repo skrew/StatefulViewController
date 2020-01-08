@@ -177,7 +177,6 @@ public class ViewStateMachine {
 
     private func nextWorkItem(state: ViewStateMachineState, animated: Bool, completion: (() -> ())?) -> DispatchWorkItem {
         return DispatchWorkItem { [unowned self] in
-
             os_log("work item %@", log: self.log, type: .debug, self.viewKey(for: state))
 
             if state == self.currentState {
@@ -282,6 +281,7 @@ public class ViewStateMachine {
         }
     }
 
+    
     // MARK: Helpers
 
     private func viewKey(for state: ViewStateMachineState) -> String {
