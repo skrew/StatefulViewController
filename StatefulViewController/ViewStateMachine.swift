@@ -7,7 +7,7 @@
 //
 
 import UIKit
-
+import os.log
 
 /// Represents the state of the view state machine
 public enum ViewStateMachineState : Equatable {
@@ -65,7 +65,7 @@ public class ViewStateMachine {
     /// The last state that was enqueued
     public fileprivate(set) var lastState: ViewStateMachineState = .none
     
-    
+    private let log = OSLog(subsystem: "de.apploft.ViewStateMachine", category: "General")
     // MARK: Init
     
     ///  Designated initializer.
@@ -151,6 +151,7 @@ public class ViewStateMachine {
         } else if lastViewKey == "loading" {
             if isWaitingToShowLoadingView && recentlyAddedViewKey == "none" {
                 workItem?.cancel()
+                os_log("cancel work item %@", log: self.log, type: .debug, lastViewKey)
                 isWaitingToShowLoadingView = false
             } else {
                 delayTime = afterLoadingTransitionDelay
@@ -159,8 +160,17 @@ public class ViewStateMachine {
 
         lastState = state
 
-        let newWorkItem = DispatchWorkItem { [unowned self] in
-            self.isWaitingToShowLoadingView = false
+        let newWorkItem = nextWorkItem(state: state, animated: animated, completion: completion)
+
+        workItem = newWorkItem
+
+        queue.asyncAfter(deadline: .now() + delayTime, execute: newWorkItem)
+    }
+
+    private func nextWorkItem(state: ViewStateMachineState, animated: Bool, completion: (() -> ())?) -> DispatchWorkItem {
+        return DispatchWorkItem { [unowned self] in
+
+            os_log("work item %@", log: self.log, type: .debug, self.viewKey(for: state))
 
             if state == self.currentState {
                 return
@@ -181,15 +191,14 @@ public class ViewStateMachine {
                 case .none:
                     self.hideAllViews(animated: animated, completion: c)
                 case .view(let viewKey):
+                    if viewKey == "loading" {
+                        self.isWaitingToShowLoadingView = false
+                    }
                     self.showView(forKey: viewKey, animated: animated, completion: c)
                 }
             }
         }
-
-        queue.asyncAfter(deadline: .now() + delayTime, execute: newWorkItem)
-        workItem = newWorkItem
     }
-    
     
     // MARK: Private view updates
     
