@@ -19,7 +19,6 @@ public protocol BackingViewProvider {
 /// error, loading or empty views.
 public protocol StatefulViewController: class, BackingViewProvider {
     /// The view state machine backing all state transitions
-    var stateMachine: ViewStateMachine { get }
     var viewStateMachine: ViewStateMachine { get }
 
     /// The current transition state of the view controller.
