@@ -20,6 +20,7 @@ public protocol BackingViewProvider {
 public protocol StatefulViewController: class, BackingViewProvider {
     /// The view state machine backing all state transitions
     var stateMachine: ViewStateMachine { get }
+    var viewStateMachine: ViewStateMachine { get }
 
     /// The current transition state of the view controller.
     /// All states other than `Content` imply that there is a placeholder view shown.
