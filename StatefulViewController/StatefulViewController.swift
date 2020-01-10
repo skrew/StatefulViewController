@@ -21,6 +21,12 @@ public protocol StatefulViewController: class, BackingViewProvider {
     /// The view state machine backing all state transitions
     var viewStateMachine: ViewStateMachine { get }
 
+    /// The work item that is added to the queue for the loading transition
+    var loadingWorkItem: DispatchWorkItem? { get set }
+
+    /// A serial dispatch queue that executes the transitions between states
+    var queue: DispatchQueue { get }
+
     /// The current transition state of the view controller.
     /// All states other than `Content` imply that there is a placeholder view shown.
     var currentState: StatefulViewControllerState { get }

@@ -27,7 +27,7 @@ extension StatefulViewController {
         }
     }
 
-    private var loadingWorkItem: DispatchWorkItem? {
+    public var loadingWorkItem: DispatchWorkItem? {
         get {
             return objc_getAssociatedObject(self, &loadingWorkItemKey) as? DispatchWorkItem
         }
@@ -36,7 +36,7 @@ extension StatefulViewController {
         }
     }
 
-    private var queue: DispatchQueue {
+    public var queue: DispatchQueue {
         return associatedObject(self, key: &queueKey) {
             return DispatchQueue(label: "de.apploft.StatefulViewController.serialQueue")
         }
