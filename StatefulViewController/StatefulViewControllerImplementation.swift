@@ -21,21 +21,36 @@ extension BackingViewProvider where Self: UIView {
 /// Default implementation of StatefulViewController for UIViewController
 extension StatefulViewController {
     
-    public var stateMachine: ViewStateMachine {
+    public var viewStateMachine: ViewStateMachine {
         return associatedObject(self, key: &stateMachineKey) { [unowned self] in
             return ViewStateMachine(view: self.backingView)
         }
     }
+
+    private var loadingWorkItem: DispatchWorkItem? {
+        get {
+            return objc_getAssociatedObject(self, &loadingWorkItemKey) as? DispatchWorkItem
+        }
+        set {
+            objc_setAssociatedObject(self, &loadingWorkItemKey, newValue, .OBJC_ASSOCIATION_RETAIN)
+        }
+    }
+
+    private var queue: DispatchQueue {
+        return associatedObject(self, key: &queueKey) {
+            return DispatchQueue(label: "de.apploft.StatefulViewController.serialQueue")
+        }
+    }
     
     public var currentState: StatefulViewControllerState {
-        switch stateMachine.currentState {
+        switch viewStateMachine.currentState {
         case .none: return .content
         case .view(let viewKey): return StatefulViewControllerState(rawValue: viewKey)!
         }
     }
     
     public var lastState: StatefulViewControllerState {
-        switch stateMachine.lastState {
+        switch viewStateMachine.lastState {
         case .none: return .content
         case .view(let viewKey): return StatefulViewControllerState(rawValue: viewKey)!
         }
@@ -78,12 +93,21 @@ extension StatefulViewController {
     
     public func transitionViewStates(loading: Bool = false, error: Error? = nil, animated: Bool = true, completion: (() -> Void)? = nil) {
         // Update view for content (i.e. hide all placeholder views)
+        var delay: Double = 0
+
         if hasContent() {
             if let e = error {
                 // show unobstrusive error
                 handleErrorWhenContentAvailable(e)
             }
-            self.stateMachine.transitionToState(.none, animated: animated, completion: completion)
+
+            if viewStateMachine.currentState == .view("loading") {
+                delay = fromLoadingTransitionDelay()
+            } else {
+                loadingWorkItem?.cancel()
+                loadingWorkItem = nil
+            }
+            queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: .none, animated: animated, completion: completion))
             return
         }
         
@@ -91,10 +115,21 @@ extension StatefulViewController {
         var newState: StatefulViewControllerState = .empty
         if loading {
             newState = .loading
-        } else if let _ = error {
+            loadingWorkItem = nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion)
+            queue.asyncAfter(deadline: .now() + toLoadingTransitionDelay(), execute: loadingWorkItem!)
+            return
+        }
+
+        if let _ = error {
             newState = .error
         }
-        self.stateMachine.transitionToState(.view(newState.rawValue), animated: animated, completion: completion)
+        queue.async(execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion))
+    }
+
+    func nextDispatchWorkItem(state: ViewStateMachineState, animated: Bool = true, completion: (() -> Void)? = nil) -> DispatchWorkItem {
+        return DispatchWorkItem { [weak self] in
+            self?.viewStateMachine.transitionToState(state)
+        }
     }
     
     
@@ -112,11 +147,22 @@ extension StatefulViewController {
     // MARK: Helper
     
     fileprivate func placeholderView(_ state: StatefulViewControllerState) -> UIView? {
-        return stateMachine[state.rawValue]
+        return viewStateMachine[state.rawValue]
     }
     
     fileprivate func setPlaceholderView(_ view: UIView?, forState state: StatefulViewControllerState) {
-        stateMachine[state.rawValue] = view
+        viewStateMachine[state.rawValue] = view
+    }
+
+
+    // MARK: Loading transition delay
+
+    public func toLoadingTransitionDelay() -> Double {
+        return 1
+    }
+
+    public func fromLoadingTransitionDelay() -> Double {
+        return 1
     }
 }
 
@@ -124,6 +170,8 @@ extension StatefulViewController {
 // MARK: Association
 
 private var stateMachineKey: UInt8 = 0
+private var loadingWorkItemKey: UInt8 = 1
+private var queueKey: UInt8 = 2
 
 private func associatedObject<T: AnyObject>(_ host: AnyObject, key: UnsafeRawPointer, initial: () -> T) -> T {
     var value = objc_getAssociatedObject(host, key) as? T

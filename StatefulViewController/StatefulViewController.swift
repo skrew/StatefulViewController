@@ -86,4 +86,10 @@ public protocol StatefulViewController: class, BackingViewProvider {
     ///
     /// - parameter error:	The error that occurred
     func handleErrorWhenContentAvailable(_ error: Error)
+
+    /// returns the transition delay to the loading state
+    func toLoadingTransitionDelay() -> Double
+
+    /// returns the transition delay from the loading state
+    func fromLoadingTransitionDelay() -> Double
 }
