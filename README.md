@@ -81,6 +81,19 @@ func loadDeliciousWines() {
 }
 ```
 
+### Set custom delays
+To minimize a flickering effect between transitions from and to the loading view, `StatefulViewController` delays between these transitions. If `endLoading` is faster than the delay before the loading view is shown, the loading view will be skipped and content is shown. On the other hand if the loading view is shown (the delay has finished), another delay is set before the content is shown. The default values of both delays are 1 second, but they can also be customized, by implementing the following methods:
+
+```swift
+func toLoadingTransitionDelay() -> Double {
+    return 0.7
+}
+
+func fromLoadingTransitionDelay() -> Double {
+    return 1.2
+}
+```
+
 ### Life cycle
 
 StatefulViewController calls the `hasContent` method to check if there is any content to display. If you do not override this method in your own class, `StatefulViewController` will always assume that there is content to display.
