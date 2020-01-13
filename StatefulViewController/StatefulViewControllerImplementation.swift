@@ -78,17 +78,60 @@ extension StatefulViewController {
     // MARK: Transitions
     
     public func setupInitialViewState(_ completion: (() -> Void)? = nil) {
-        let isLoading = (lastState == .loading)
-        let error: NSError? = (lastState == .error) ? NSError(domain: "de.apploft.StatefulViewController.ErrorDomain", code: -1, userInfo: nil) : nil
-        transitionViewStates(loading: isLoading, error: error, animated: false, completion: completion)
+        var newState: StatefulViewControllerState = .empty
+        if hasContent() {
+            newState = .content
+        }
+        queue.async(execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: false, completion: completion))
     }
     
     public func startLoading(animated: Bool = false, completion: (() -> Void)? = nil) {
-        transitionViewStates(loading: true, animated: animated, completion: completion)
+        var newState: StatefulViewControllerState = .loading
+        if hasContent() {
+            newState = .content
+            queue.async(execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion))
+        } else {
+            newState = .loading
+            loadingWorkItem = nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion)
+            queue.asyncAfter(deadline: .now() + toLoadingTransitionDelay(), execute: loadingWorkItem!)
+        }
     }
     
     public func endLoading(animated: Bool = true, error: Error? = nil, completion: (() -> Void)? = nil) {
-        transitionViewStates(loading: false, error: error, animated: animated, completion: completion)
+        var delay: Double = 0
+        var newState: StatefulViewControllerState = .empty
+
+        if let _ = error {
+            newState = .error
+        }
+
+        if hasContent() {
+            newState = .content
+            if let error = error {
+                handleErrorWhenContentAvailable(error)
+            }
+        }
+
+        if currentState == .loading {
+            delay = fromLoadingTransitionDelay()
+        } else {
+           loadingWorkItem?.cancel()
+           loadingWorkItem = nil
+        }
+
+        let newViewStateMachineState: ViewStateMachineState = (newState == .content) ? .none : .view(newState.rawValue)
+        queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: newViewStateMachineState, animated: animated, completion: completion))
+    }
+
+    private func showContent(animated: Bool = true, completion: (() -> Void)? = nil) {
+        var delay: Double = 0
+        if currentState == .loading {
+            delay = fromLoadingTransitionDelay()
+        } else {
+            loadingWorkItem?.cancel()
+            loadingWorkItem = nil
+        }
+        queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: .none, animated: animated, completion: completion))
     }
     
     public func transitionViewStates(loading: Bool = false, error: Error? = nil, animated: Bool = true, completion: (() -> Void)? = nil) {
@@ -101,7 +144,7 @@ extension StatefulViewController {
                 handleErrorWhenContentAvailable(e)
             }
 
-            if viewStateMachine.currentState == .view("loading") {
+            if currentState == .loading {
                 delay = fromLoadingTransitionDelay()
             } else {
                 loadingWorkItem?.cancel()
@@ -122,8 +165,14 @@ extension StatefulViewController {
 
         if let _ = error {
             newState = .error
+            if currentState == .loading {
+                delay = fromLoadingTransitionDelay()
+            } else {
+                loadingWorkItem?.cancel()
+                loadingWorkItem = nil
+            }
         }
-        queue.async(execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion))
+        queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion))
     }
 
     func nextDispatchWorkItem(state: ViewStateMachineState, animated: Bool = true, completion: (() -> Void)? = nil) -> DispatchWorkItem {
