@@ -10,9 +10,18 @@ import UIKit
 
 
 /// Represents the state of the view state machine
-public enum ViewStateMachineState : Equatable {
+public enum ViewStateMachineState : Equatable, CustomStringConvertible {
     case none			// No view shown
     case view(String)	// View with specific key is shown
+
+    public var description: String {
+        switch self {
+        case .none:
+            return "none"
+        case .view(let viewKey):
+            return viewKey
+        }
+    }
 }
 
 public func == (lhs: ViewStateMachineState, rhs: ViewStateMachineState) -> Bool {

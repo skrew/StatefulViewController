@@ -19,7 +19,13 @@ public protocol BackingViewProvider {
 /// error, loading or empty views.
 public protocol StatefulViewController: class, BackingViewProvider {
     /// The view state machine backing all state transitions
-    var stateMachine: ViewStateMachine { get }
+    var viewStateMachine: ViewStateMachine { get }
+
+    /// The work item that is added to the queue for the loading transition
+    var loadingWorkItem: DispatchWorkItem? { get set }
+
+    /// A serial dispatch queue that executes the transitions between states
+    var queue: DispatchQueue { get }
 
     /// The current transition state of the view controller.
     /// All states other than `Content` imply that there is a placeholder view shown.
@@ -64,15 +70,6 @@ public protocol StatefulViewController: class, BackingViewProvider {
     /// - parameter error:		An error that might have occurred whilst loading
     func endLoading(animated: Bool, error: Error?, completion: (() -> Void)?)
     
-    /// Transitions the view to the appropriate state based on the `loading` and `error`
-    /// input parameters and shows/hides corresponding placeholder views.
-    ///
-    /// - parameter loading:		true if the controller is currently loading
-    /// - parameter error:		An error that might have occurred whilst loading
-    /// - parameter animated:	true if the switch to the placeholder view should be animated, false otherwise
-    func transitionViewStates(loading: Bool, error: Error?, animated: Bool, completion: (() -> Void)?)
-    
-    
     // MARK: Content and error handling
     
     /// Return true if content is available in your controller.
@@ -86,4 +83,10 @@ public protocol StatefulViewController: class, BackingViewProvider {
     ///
     /// - parameter error:	The error that occurred
     func handleErrorWhenContentAvailable(_ error: Error)
+
+    /// returns the transition delay to the loading state
+    func toLoadingTransitionDelay() -> Double
+
+    /// returns the transition delay from the loading state
+    func fromLoadingTransitionDelay() -> Double
 }
