@@ -123,58 +123,6 @@ extension StatefulViewController {
         queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: newViewStateMachineState, animated: animated, completion: completion))
     }
 
-    private func showContent(animated: Bool = true, completion: (() -> Void)? = nil) {
-        var delay: Double = 0
-        if currentState == .loading {
-            delay = fromLoadingTransitionDelay()
-        } else {
-            loadingWorkItem?.cancel()
-            loadingWorkItem = nil
-        }
-        queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: .none, animated: animated, completion: completion))
-    }
-    
-    public func transitionViewStates(loading: Bool = false, error: Error? = nil, animated: Bool = true, completion: (() -> Void)? = nil) {
-        // Update view for content (i.e. hide all placeholder views)
-        var delay: Double = 0
-
-        if hasContent() {
-            if let e = error {
-                // show unobstrusive error
-                handleErrorWhenContentAvailable(e)
-            }
-
-            if currentState == .loading {
-                delay = fromLoadingTransitionDelay()
-            } else {
-                loadingWorkItem?.cancel()
-                loadingWorkItem = nil
-            }
-            queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: .none, animated: animated, completion: completion))
-            return
-        }
-        
-        // Update view for placeholder
-        var newState: StatefulViewControllerState = .empty
-        if loading {
-            newState = .loading
-            loadingWorkItem = nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion)
-            queue.asyncAfter(deadline: .now() + toLoadingTransitionDelay(), execute: loadingWorkItem!)
-            return
-        }
-
-        if let _ = error {
-            newState = .error
-            if currentState == .loading {
-                delay = fromLoadingTransitionDelay()
-            } else {
-                loadingWorkItem?.cancel()
-                loadingWorkItem = nil
-            }
-        }
-        queue.asyncAfter(deadline: .now() + delay, execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: animated, completion: completion))
-    }
-
     func nextDispatchWorkItem(state: ViewStateMachineState, animated: Bool = true, completion: (() -> Void)? = nil) -> DispatchWorkItem {
         return DispatchWorkItem { [weak self] in
             self?.viewStateMachine.transitionToState(state)
