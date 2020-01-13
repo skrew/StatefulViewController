@@ -1,4 +1,5 @@
 import UIKit
+import os
 
 
 // MARK: Default Implementation BackingViewProvider
@@ -15,6 +16,7 @@ extension BackingViewProvider where Self: UIView {
     }
 }
 
+fileprivate let log = OSLog(subsystem: "de.apploft.StatefulViewControllerImplementation", category: "General")
 
 // MARK: Default Implementation StatefulViewController
 
@@ -115,6 +117,7 @@ extension StatefulViewController {
         if currentState == .loading {
             delay = fromLoadingTransitionDelay()
         } else {
+           os_log("cancel loading work item", log: log, type: .debug, "")
            loadingWorkItem?.cancel()
            loadingWorkItem = nil
         }
@@ -125,6 +128,7 @@ extension StatefulViewController {
 
     func nextDispatchWorkItem(state: ViewStateMachineState, animated: Bool = true, completion: (() -> Void)? = nil) -> DispatchWorkItem {
         return DispatchWorkItem { [weak self] in
+            os_log("transition to state %@", log: log, type: .debug, state.description)
             self?.viewStateMachine.transitionToState(state)
         }
     }
