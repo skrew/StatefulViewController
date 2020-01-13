@@ -8,6 +8,7 @@
 
 import Foundation
 import StatefulViewController
+import UIKit
 
 class CollectionViewController: UICollectionViewController {
     fileprivate var dataArray = [String]()

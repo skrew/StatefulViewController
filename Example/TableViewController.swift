@@ -8,6 +8,7 @@
 
 import Foundation
 import StatefulViewController
+import UIKit
 
 class TableViewController: UITableViewController {
     fileprivate var dataArray = [String]()
