@@ -6,8 +6,7 @@
 //  Copyright © 2017 Alexander Schuch. All rights reserved.
 //
 
-import Foundation
-import StatefulViewController
+import UIKit
 
 class CollectionViewController: UICollectionViewController {
     fileprivate var dataArray = [String]()

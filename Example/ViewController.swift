@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import StatefulViewController
 
 class ViewController: UIViewController {
     fileprivate var dataArray = [String]()
