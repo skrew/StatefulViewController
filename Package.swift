@@ -24,6 +24,6 @@ let package = Package(
         .testTarget(
             name: "StatefulViewControllerTests",
             dependencies: ["StatefulViewController"],
-            path: "StatefulViewController"),
+            path: "StatefulViewControllerTests"),
     ]
 )
