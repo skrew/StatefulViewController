@@ -157,23 +157,3 @@ stateMachine.transitionToState(.None, animated: true) {
     println("all views hidden now")
 }
 ```
-
-## Installation
-
-#### Swift Package Manager
-
-TODO: add instructions for SPM
-
-#### Manually
-
-Just drag and drop the two `.swift` files in the `StatefulViewController` folder into your project.
-
-## Tests
-
-Open the Xcode project and press `⌘-U` to run the tests.
-
-Alternatively, all tests can be run from the terminal using [xctool](https://github.com/facebook/xctool).
-
-```bash
-xctool -scheme StatefulViewControllerTests -sdk iphonesimulator test
-```
