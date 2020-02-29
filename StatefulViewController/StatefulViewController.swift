@@ -2,6 +2,7 @@ import UIKit
 
 /// Represents all possible states of a stateful view controller
 public enum StatefulViewControllerState: String {
+    case none
     case content
     case loading
     case error

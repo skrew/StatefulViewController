@@ -80,11 +80,12 @@ extension StatefulViewController {
     // MARK: Transitions
     
     public func setupInitialViewState(_ completion: (() -> Void)? = nil) {
-        var newState: StatefulViewControllerState = .empty
+        var vms = ViewStateMachineState.none
+
         if hasContent() {
-            newState = .content
+            vms = .view(StatefulViewControllerState.content.rawValue)
         }
-        queue.async(execute: nextDispatchWorkItem(state: .view(newState.rawValue), animated: false, completion: completion))
+        queue.async(execute: nextDispatchWorkItem(state: vms, animated: false, completion: completion))
     }
     
     public func startLoading(animated: Bool = false, completion: (() -> Void)? = nil) {
