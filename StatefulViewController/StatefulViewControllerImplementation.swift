@@ -39,9 +39,7 @@ extension StatefulViewController {
     }
 
     public var queue: DispatchQueue {
-        return associatedObject(self, key: &queueKey) {
-            return DispatchQueue(label: "de.apploft.StatefulViewController.serialQueue")
-        }
+        return DispatchQueue.main
     }
     
     public var currentState: StatefulViewControllerState {
